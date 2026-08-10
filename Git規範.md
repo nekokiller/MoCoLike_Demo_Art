@@ -1,76 +1,47 @@
 # Git 規範
 
-> 本 repo 僅用於管理美術資源，因此採用簡單、容易執行的 Git 流程；不套用軟體開發專案的完整規範。
+> 本文件只規範 commit 訊息與提交自檢。
 
 ---
 
-## 1. Commit 權限
-
-- AI 可以檢查狀態、查看差異、建立或修改檔案，以及執行 `git add`。
-- AI 只有在**回報變更內容並取得使用者確認後**，才可執行 `git commit`。
-- AI 不得自行執行 `git merge` 或 `git push`；需要時必須先取得使用者明確授權。
-
-## 2. Commit 時機
-
-- 以「一組完整、相關的美術資源變更」為一次 commit。
-- 新增、替換或刪除資源時，完成一個可辨識的變更批次後再提交，不需要每個檔案各自 commit。
-- 文件或 Git 設定變更，與美術資源分開提交。
-
-## 3. Commit Message
-
-使用簡短的繁體中文即可，格式如下：
+## Commit Message 格式
 
 ```text
-<類型>: <變更說明>
+<type>(scope): <繁中說明>
 ```
 
-常用類型：
-
-| 類型 | 用途 |
+| type | 用途 |
 | --- | --- |
-| `asset` | 新增、替換或整理美術資源 |
-| `docs` | 修改說明文件 |
-| `chore` | 修改 Git 設定或其他雜務 |
-| `fix` | 修正資源問題 |
+| `asset` | 新增、替換、更新、移除或整理美術資產 |
+| `fix` | 修正資產內容、檔名、路徑或匯入設定等問題 |
+| `docs` | 純文件變更 |
+| `chore` | Git 設定、資料夾結構或其他不屬於資產內容的雜務 |
 
-範例：
+- **scope** 為選填；使用 `asset` 時，建議以 scope 標示資產種類，例如 `model`、`texture`、`material`、`animation`、`vfx`、`ui`、`character` 或 `environment`。
+- 範例：`asset(model): 新增冒險者角色模型`、`asset(texture): 更新森林地表貼圖`、`fix(animation): 修正角色待機動畫`。
+- 同一批次若包含多種密切相關的資產，可省略 scope，例如 `asset: 新增森林場景資產`。
+- 主旨與正文說明一律使用繁體中文；主旨應聚焦變更目的，正文補充範圍、原因與檢查結果即可。
 
-```text
-asset: 新增角色待機動畫
-asset: 替換主選單背景圖
-asset: 整理第一批怪物素材
-fix: 修正圖示檔名
-docs: 更新資源說明
-```
+## 共同作者署名（每則必填）
 
-- 不要求 Conventional Commits 的 `scope`。
-- 不要求在主旨加入作者名稱。
-
-## 4. Commit Message 署名
-
-每則 commit message 必須在結尾加入 `Co-Authored-By`，並與正文空一行：
+每則 commit message 的結尾必須與正文空一行，再附上當次 session 實際模型的 trailer；`<email>` 不可省略：
 
 ```text
 Co-Authored-By: <當前 session 模型顯示名> <供應商 noreply email>
 ```
 
-- `<當前 session 模型顯示名>` 必須填寫本次實際使用的模型名稱，不可直接照抄範例。
-- email 必須使用對應供應商的 noreply email，例如 Codex 使用 `noreply@openai.com`。
-- 不確定模型名稱或 email 時，先向使用者確認。
+不要照抄範例模型名稱；email 依供應商（如 Codex 用 `<noreply@openai.com>`）；不確定目前模型顯示名或 email 時，先詢問使用者。工具自動附加、但與當次實際模型不符的署名，不得保留。
 
-## 5. Branch
+## 提交與自檢方式
 
-- 小幅、直接的資源更新可直接在目前分支完成。
-- 大批資源或尚未完成的工作，可使用工作分支；完成後再由使用者決定是否合併。
-- 不要求固定的分支命名格式，但名稱應能看懂用途，例如 `art/menu-background`。
+1. **多行 message 一律使用暫存檔搭配 `git commit -F <路徑>`**；避免 PowerShell here-string 與 Bash heredoc 混用而在 message 首尾留下 `@`。
+2. 單行 message 可用 `git commit -m "..."`；若直接輸入多行訊息，shell 與語法必須一致。
+3. commit 後執行：
+   ```bash
+   git log -1 --format=%B
+   ```
+   確認開頭／結尾無多餘字元、最後一行有正確 `Co-Authored-By`（含 email）。若遺漏，未 push 前以 `git commit --amend` 補正；已 push 時不得自行改寫遠端歷史，須先取得使用者明確授權。
 
-## 6. Push 與檢查
+## Push
 
-- `git push` 由使用者自行執行，或由使用者明確授權 AI 後執行。
-- Commit 前至少確認：
-  1. 變更的檔案正確。
-  2. 沒有誤加入暫存檔、個人檔案或不必要的大型檔案。
-  3. 資源檔名與資料夾位置符合專案慣例。
-- 不任意改寫已公開的 commit 歷史；若需 `reset`、`rebase` 或強制 push，必須先確認。
-
-
+commit 後應主動詢問使用者是否授權 `git push`；未獲明確授權不得推送。
